@@ -1,7 +1,15 @@
-import React from "react";
+interface ChatProps {
+  username: string | undefined;
+}
 
-const Chat = () => {
-  return <div>Chat</div>;
+const Chat = ({ username }: ChatProps) => {
+  console.log(username);
+
+  return (
+    <div>
+      <h1>Hello {username}</h1>
+    </div>
+  );
 };
 
 export default Chat;
