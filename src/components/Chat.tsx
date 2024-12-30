@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
-import "../src/App.css";
+import Button from "./Button";
 
 interface ChatProps {
   username: string | undefined;
@@ -88,12 +88,20 @@ const Chat = ({ username }: ChatProps) => {
     }
   };
 
+  const disconnect = () => {
+    if (client) {
+      client.deactivate();
+      console.log("Disconnected from WebSocket server");
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="space-y-5 p-5">
-      <div className="overflow-y-auto border rounded-xl p-10">
+      <div className="overflow-y-auto border rounded-xl p-10 bg-[#141414] h-72">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
-            <span className="text-red-500">{parseSender(msg)}</span>{" "}
+            <span className="font-bold">{parseSender(msg)}</span>{" "}
             {parseMessage(msg)}
           </div>
         ))}
@@ -104,15 +112,16 @@ const Chat = ({ username }: ChatProps) => {
           placeholder="Type a message..."
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              sendMessage();
+            }
+          }}
           className="p-3 flex-grow rounded-xl border"
         />
-        <button
-          onClick={sendMessage}
-          className="p-3 bg-blue-500 text-white rounded-xl"
-        >
-          Send
-        </button>
+        <Button onClick={sendMessage} text="Send" />
       </div>
+      <Button onClick={disconnect} text="Disconnect" isDisconnect={true} />
     </div>
   );
 };

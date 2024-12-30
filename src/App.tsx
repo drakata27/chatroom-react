@@ -1,7 +1,9 @@
 import { useState } from "react";
 import "./App.css";
 import { Client } from "@stomp/stompjs";
-import Chat from "../components/Chat";
+import Chat from "./components/Chat";
+import Button from "./components/Button";
+import Input from "./components/Input";
 
 function App() {
   const [username, setUsername] = useState();
@@ -57,12 +59,12 @@ function App() {
       {joined === false ? (
         <>
           <div className="flex flex-col space-y-5">
-            <input
-              placeholder="Enter username..."
-              className="p-3 rounded-xl"
+            <Input
               onChange={handleInputChange}
+              placeholder="Enter username..."
+              onKeyDownAction={connect}
             />
-            <button onClick={connect}>Join</button>
+            <Button onClick={connect} text="Join" />
           </div>
         </>
       ) : (
