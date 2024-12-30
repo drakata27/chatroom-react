@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
+import "../src/App.css";
 
 interface ChatProps {
   username: string | undefined;
@@ -79,7 +80,8 @@ const Chat = ({ username }: ChatProps) => {
   const parseSender = (msg: string) => {
     try {
       const parsed = JSON.parse(msg);
-      return parsed.sender || "Invalid sender";
+      if (parsed.type === "JOIN") return;
+      return parsed.sender + ":" || "Invalid sender";
     } catch (error) {
       console.error("Failed to parse sender:", error);
       return "Error parsing sender";
@@ -87,15 +89,16 @@ const Chat = ({ username }: ChatProps) => {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="h-80 overflow-y-auto border rounded-xl p-5 bg-gray-100">
+    <div className="space-y-5 p-5">
+      <div className="overflow-y-auto border rounded-xl p-10">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
-            {parseSender(msg)}: {parseMessage(msg)}
+            <span className="text-red-500">{parseSender(msg)}</span>{" "}
+            {parseMessage(msg)}
           </div>
         ))}
       </div>
-      <div className="flex space-x-3">
+      <div className="flex space-x-5">
         <input
           type="text"
           placeholder="Type a message..."

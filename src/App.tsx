@@ -51,9 +51,11 @@ function App() {
 
   return (
     <div className="space-y-5 border rounded-xl p-10">
+      <h2 className="text-4xl">
+        {username ? <>Hi, {username} 👋</> : <>Please enter a username👇 </>}
+      </h2>
       {joined === false ? (
         <>
-          <h1>Enter your name to join</h1>
           <div className="flex flex-col space-y-5">
             <input
               placeholder="Enter username..."
