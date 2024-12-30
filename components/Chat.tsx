@@ -66,12 +66,32 @@ const Chat = ({ username }: ChatProps) => {
     }
   };
 
+  const parseMessage = (msg: string): string => {
+    try {
+      const parsed = JSON.parse(msg);
+      return parsed.content || "Invalid message content";
+    } catch (error) {
+      console.error("Failed to parse message:", error);
+      return "Error parsing message";
+    }
+  };
+
+  const parseSender = (msg: string) => {
+    try {
+      const parsed = JSON.parse(msg);
+      return parsed.sender || "Invalid sender";
+    } catch (error) {
+      console.error("Failed to parse sender:", error);
+      return "Error parsing sender";
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="h-80 overflow-y-auto border rounded-xl p-5 bg-gray-100">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
-            {msg}
+            {parseSender(msg)}: {parseMessage(msg)}
           </div>
         ))}
       </div>
