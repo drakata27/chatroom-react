@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import Button from "./Button";
+import { User } from "lucide-react";
 
 interface ChatProps {
   username: string | undefined;
@@ -10,6 +11,7 @@ const Chat = ({ username }: ChatProps) => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState<string>("");
+  const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
     if (!username) return;
@@ -18,6 +20,10 @@ const Chat = ({ username }: ChatProps) => {
       brokerURL: "ws://localhost:8080/ws", // Replace with your WebSocket endpoint
       onConnect: () => {
         console.log("Connected to WebSocket server");
+
+        newClient.subscribe("/topic/userCount", (message) => {
+          setUserCount(parseInt(message.body, 10));
+        });
 
         // Subscribe to a topic
         newClient.subscribe("/topic/public", (message) => {
@@ -70,7 +76,8 @@ const Chat = ({ username }: ChatProps) => {
   const parseMessage = (msg: string): string => {
     try {
       const parsed = JSON.parse(msg);
-      return parsed.content || "Invalid message content";
+      // return parsed.content || "Invalid message content";
+      return parsed.content;
     } catch (error) {
       console.error("Failed to parse message:", error);
       return "Error parsing message";
@@ -122,6 +129,11 @@ const Chat = ({ username }: ChatProps) => {
         <Button onClick={sendMessage} text="Send" />
       </div>
       <Button onClick={disconnect} text="Disconnect" isDisconnect={true} />
+
+      <div className="flex space-x-2">
+        <User />
+        <span>{userCount}</span>
+      </div>
     </div>
   );
 };
