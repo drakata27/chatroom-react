@@ -17,7 +17,7 @@ const Chat = ({ username }: ChatProps) => {
     if (!username) return;
 
     const newClient = new Client({
-      brokerURL: "ws://localhost:8080/ws", // Replace with your WebSocket endpoint
+      brokerURL: "ws://localhost:8080/ws",
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
@@ -38,7 +38,7 @@ const Chat = ({ username }: ChatProps) => {
           type: "JOIN",
         });
         newClient.publish({
-          destination: "/app/chat.addUser", // Replace with your server mapping
+          destination: "/app/chat.addUser",
           body: joinMessage,
         });
       },
@@ -65,18 +65,20 @@ const Chat = ({ username }: ChatProps) => {
       });
 
       client.publish({
-        destination: "/app/chat.sendMessage", // Replace with your server mapping
+        destination: "/app/chat.sendMessage",
         body: chatMessage,
       });
 
-      setMessageInput(""); // Clear input field
+      setMessageInput("");
     }
   };
 
   const parseMessage = (msg: string): string => {
     try {
       const parsed = JSON.parse(msg);
-      // return parsed.content || "Invalid message content";
+      if (parsed.type === "LEAVE") {
+        return `${parsed.sender} has left the chat`;
+      }
       return parsed.content;
     } catch (error) {
       console.error("Failed to parse message:", error);
@@ -87,7 +89,7 @@ const Chat = ({ username }: ChatProps) => {
   const parseSender = (msg: string) => {
     try {
       const parsed = JSON.parse(msg);
-      if (parsed.type === "JOIN") return;
+      if (parsed.type === "JOIN" || parsed.type === "LEAVE") return;
       return parsed.sender + ":" || "Invalid sender";
     } catch (error) {
       console.error("Failed to parse sender:", error);
@@ -97,9 +99,9 @@ const Chat = ({ username }: ChatProps) => {
 
   const disconnect = () => {
     if (client) {
-      client.deactivate();
       console.log("Disconnected from WebSocket server");
       window.location.reload();
+      client.deactivate();
     }
   };
 
