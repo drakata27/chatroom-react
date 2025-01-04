@@ -4,6 +4,7 @@ import { Client } from "@stomp/stompjs";
 import Chat from "./components/Chat";
 import Button from "./components/Button";
 import Input from "./components/Input";
+import BASE_URL from "./utils/config";
 
 function App() {
   const [username, setUsername] = useState<string | undefined>(undefined);
@@ -22,7 +23,7 @@ function App() {
     setJoined(true);
 
     const client = new Client({
-      brokerURL: "ws://localhost:8080/ws",
+      brokerURL: `${BASE_URL}/ws`,
       connectHeaders: {
         // Optional headers if your server requires authentication
         username: username,
@@ -32,6 +33,11 @@ function App() {
       },
       onConnect: () => {
         console.log("Connected to WebSocket server");
+
+        client.subscribe("/topic/userCount", (message) => {
+          console.log("Received user count update:", message.body);
+          // setUserCount(parseInt(message.body, 10));
+        });
 
         // Subscribe to a topic
         client.subscribe("/topic/public", (message) => {
