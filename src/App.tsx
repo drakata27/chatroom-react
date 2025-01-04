@@ -33,6 +33,11 @@ function App() {
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
+        client.subscribe("/topic/userCount", (message) => {
+          console.log("Received user count update:", message.body);
+          // setUserCount(parseInt(message.body, 10));
+        });
+
         // Subscribe to a topic
         client.subscribe("/topic/public", (message) => {
           console.log("Message received:", message.body);

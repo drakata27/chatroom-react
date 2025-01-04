@@ -22,6 +22,7 @@ const Chat = ({ username }: ChatProps) => {
         console.log("Connected to WebSocket server");
 
         newClient.subscribe("/topic/userCount", (message) => {
+          console.log("Received user count update:", message.body);
           setUserCount(parseInt(message.body, 10));
         });
 
@@ -34,7 +35,6 @@ const Chat = ({ username }: ChatProps) => {
         // Notify server of new user
         const joinMessage = JSON.stringify({
           sender: username,
-          // content: `${username} has joined the chat!`,
           type: "JOIN",
         });
         newClient.publish({
@@ -108,6 +108,16 @@ const Chat = ({ username }: ChatProps) => {
     if (client) {
       console.log("Disconnected from WebSocket server");
       window.location.reload();
+      // const leaveMessage = JSON.stringify({
+      //   sender: username,
+      //   content: "has left",
+      //   type: "LEAVE",
+      // });
+
+      // client.publish({
+      //   destination: "/app/chat.sendMessage",
+      //   body: leaveMessage,
+      // });
       client.deactivate();
     }
   };
