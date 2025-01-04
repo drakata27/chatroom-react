@@ -6,10 +6,10 @@ import Button from "./components/Button";
 import Input from "./components/Input";
 
 function App() {
-  const [username, setUsername] = useState();
+  const [username, setUsername] = useState<string | undefined>(undefined);
   const [joined, setJoined] = useState(false);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
   };
 
@@ -22,7 +22,7 @@ function App() {
     setJoined(true);
 
     const client = new Client({
-      brokerURL: "ws://localhost:8080/ws", // Your WebSocket endpoint
+      brokerURL: "ws://localhost:8080/ws",
       connectHeaders: {
         // Optional headers if your server requires authentication
         username: username,
@@ -52,7 +52,7 @@ function App() {
   };
 
   return (
-    <div className="space-y-5 border rounded-xl p-10">
+    <div className="space-y-5 rounded-xl p-10 bg-[#242424] w-full sm:max-w-lg">
       <h2 className="text-4xl">
         {username ? <>Hi, {username} 👋</> : <>Please enter a username👇 </>}
       </h2>

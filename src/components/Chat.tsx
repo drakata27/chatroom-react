@@ -34,7 +34,7 @@ const Chat = ({ username }: ChatProps) => {
         // Notify server of new user
         const joinMessage = JSON.stringify({
           sender: username,
-          content: `${username} has joined the chat!`,
+          // content: `${username} has joined the chat!`,
           type: "JOIN",
         });
         newClient.publish({
@@ -73,11 +73,18 @@ const Chat = ({ username }: ChatProps) => {
     }
   };
 
-  const parseMessage = (msg: string): string => {
+  const parseMessage = (msg: string) => {
     try {
       const parsed = JSON.parse(msg);
       if (parsed.type === "LEAVE") {
-        return `${parsed.sender} has left the chat`;
+        return (
+          <span className="text-red-500">{`${parsed.sender} has left the chat!😞`}</span>
+        );
+      }
+      if (parsed.type === "JOIN") {
+        return (
+          <span className="text-green-500">{`${parsed.sender} has joined the chat!😀`}</span>
+        );
       }
       return parsed.content;
     } catch (error) {
@@ -110,7 +117,7 @@ const Chat = ({ username }: ChatProps) => {
       <div className="overflow-y-auto border rounded-xl p-10 bg-[#141414] h-72">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
-            <span className="font-bold">{parseSender(msg)}</span>{" "}
+            <span className="font-bold text-cyan-500">{parseSender(msg)}</span>{" "}
             {parseMessage(msg)}
           </div>
         ))}
