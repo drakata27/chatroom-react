@@ -14,6 +14,8 @@ const Chat = ({ username }: ChatProps) => {
   const [messageInput, setMessageInput] = useState<string>("");
   const [userCount, setUserCount] = useState(0);
 
+  console.log("BASE URL:", BASE_URL);
+
   useEffect(() => {
     if (!username) return;
 
