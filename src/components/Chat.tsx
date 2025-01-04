@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import Button from "./Button";
 import { User } from "lucide-react";
+import BASE_URL from "../utils/config";
 
 interface ChatProps {
   username: string | undefined;
@@ -17,7 +18,7 @@ const Chat = ({ username }: ChatProps) => {
     if (!username) return;
 
     const newClient = new Client({
-      brokerURL: "ws://localhost:8080/ws",
+      brokerURL: `${BASE_URL}/ws`,
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
