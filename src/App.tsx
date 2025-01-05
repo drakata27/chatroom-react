@@ -5,13 +5,19 @@ import Chat from "./components/Chat";
 import Button from "./components/Button";
 import Input from "./components/Input";
 import BASE_URL from "./utils/config";
+import { Divider } from "@mui/material";
 
 function App() {
   const [username, setUsername] = useState<string | undefined>(undefined);
+  const [roomId, setRoomId] = useState<string | undefined>(undefined);
   const [joined, setJoined] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
+  };
+
+  const handleInputChangeRoomId = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRoomId(e.target.value);
   };
 
   const connect = () => {
@@ -34,13 +40,8 @@ function App() {
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
-        client.subscribe("/topic/userCount", (message) => {
-          console.log("Received user count update:", message.body);
-          // setUserCount(parseInt(message.body, 10));
-        });
-
         // Subscribe to a topic
-        client.subscribe("/topic/public", (message) => {
+        client.subscribe(`/topic/${roomId}`, (message) => {
           console.log("Message received:", message.body);
         });
       },
@@ -57,10 +58,15 @@ function App() {
     };
   };
 
+  // TODO handle new connection
+  const handleNewConnection = () => {
+    connect();
+  };
+
   return (
     <div className="space-y-5 rounded-xl p-10 bg-[#242424] w-full sm:max-w-lg">
       <h2 className="text-4xl">
-        {username ? <>Hi, {username} 👋</> : <>Please enter a username👇 </>}
+        {username ? <>Hi, {username} 👋</> : <>Enter a username👇 </>}
       </h2>
       {joined === false ? (
         <>
@@ -70,11 +76,23 @@ function App() {
               placeholder="Enter username..."
               onKeyDownAction={connect}
             />
+            <Button onClick={connect} text="Create Room" />
+          </div>
+
+          <Divider sx={{ color: "lightgray" }}>Or</Divider>
+
+          <h2 className="text-4xl">Join a Room ✅</h2>
+          <div className="flex flex-col space-y-5">
+            <Input
+              onChange={handleInputChangeRoomId}
+              placeholder="Enter room ID..."
+              onKeyDownAction={connect}
+            />
             <Button onClick={connect} text="Join" />
           </div>
         </>
       ) : (
-        <Chat username={username} />
+        <Chat username={username} roomId={roomId} />
       )}
     </div>
   );

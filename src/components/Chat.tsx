@@ -6,15 +6,14 @@ import BASE_URL from "../utils/config";
 
 interface ChatProps {
   username: string | undefined;
+  roomId: string | undefined;
 }
 
-const Chat = ({ username }: ChatProps) => {
+const Chat = ({ username, roomId }: ChatProps) => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState<string>("");
   const [userCount, setUserCount] = useState(0);
-
-  console.log("BASE URL:", BASE_URL); // TODO: Remove
 
   useEffect(() => {
     if (!username) return;
@@ -30,7 +29,7 @@ const Chat = ({ username }: ChatProps) => {
         });
 
         // Subscribe to a topic
-        newClient.subscribe("/topic/public", (message) => {
+        newClient.subscribe(`/topic/${roomId}`, (message) => {
           const receivedMessage = message.body;
           setMessages((prevMessages) => [...prevMessages, receivedMessage]);
         });
@@ -41,7 +40,7 @@ const Chat = ({ username }: ChatProps) => {
           type: "JOIN",
         });
         newClient.publish({
-          destination: "/app/chat.addUser",
+          destination: `/app/chat.addUser/${roomId}`,
           body: joinMessage,
         });
       },
@@ -57,7 +56,7 @@ const Chat = ({ username }: ChatProps) => {
     return () => {
       if (newClient) newClient.deactivate();
     };
-  }, [username]);
+  }, [username, roomId]);
 
   const sendMessage = () => {
     if (messageInput.trim() && client) {
@@ -68,7 +67,7 @@ const Chat = ({ username }: ChatProps) => {
       });
 
       client.publish({
-        destination: "/app/chat.sendMessage",
+        destination: `/app/chat.sendMessage/${roomId}`,
         body: chatMessage,
       });
 
@@ -111,16 +110,6 @@ const Chat = ({ username }: ChatProps) => {
     if (client) {
       console.log("Disconnected from WebSocket server");
       window.location.reload();
-      // const leaveMessage = JSON.stringify({
-      //   sender: username,
-      //   content: "has left",
-      //   type: "LEAVE",
-      // });
-
-      // client.publish({
-      //   destination: "/app/chat.sendMessage",
-      //   body: leaveMessage,
-      // });
       client.deactivate();
     }
   };
