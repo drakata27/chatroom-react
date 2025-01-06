@@ -110,6 +110,16 @@ const Chat = ({ username, roomId }: ChatProps) => {
     if (client) {
       console.log("Disconnected from WebSocket server");
       window.location.reload();
+      const chatMessage = JSON.stringify({
+        sender: username,
+        content: messageInput,
+        type: "LEAVE",
+      });
+
+      client.publish({
+        destination: `/app/chat.sendMessage/${roomId}`,
+        body: chatMessage,
+      });
       client.deactivate();
     }
   };
@@ -120,7 +130,7 @@ const Chat = ({ username, roomId }: ChatProps) => {
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
             <span className="font-bold text-cyan-500">{parseSender(msg)}</span>{" "}
-            {parseMessage(msg)}
+            <span className="text-white">{parseMessage(msg)}</span>
           </div>
         ))}
       </div>
@@ -135,7 +145,7 @@ const Chat = ({ username, roomId }: ChatProps) => {
               sendMessage();
             }
           }}
-          className="p-3 flex-grow rounded-xl border"
+          className="p-3 flex-grow rounded-xl border text-white"
         />
         <Button onClick={sendMessage} text="Send" />
       </div>

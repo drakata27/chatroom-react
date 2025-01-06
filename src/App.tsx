@@ -2,12 +2,12 @@ import { useState } from "react";
 import "./App.css";
 import { Client } from "@stomp/stompjs";
 import Chat from "./components/Chat";
-import Button from "./components/Button";
-import Input from "./components/Input";
 import BASE_URL from "./utils/config";
-import { Divider } from "@mui/material";
 import axios from "axios";
 import BASE_HTTP_URL from "./utils/httpConfig";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import CreateRoomDialog from "./components/CreateRoomDialog";
+import JoinRoomDialog from "./components/JoinRoomDialog";
 
 function App() {
   const [username, setUsername] = useState<string | undefined>(undefined);
@@ -56,7 +56,6 @@ function App() {
       },
     });
 
-    // Activate the client
     client.activate();
     // Cleanup on component unmount
     return () => {
@@ -84,33 +83,27 @@ function App() {
 
   return (
     <div className="space-y-5 rounded-xl p-10 bg-[#242424] w-full sm:max-w-lg">
-      <h2 className="text-4xl">
-        {username ? <>Hi, {username} 👋</> : <>Enter a username👇 </>}
-      </h2>
       {joined === false ? (
-        <>
-          <div className="flex flex-col space-y-5">
-            <Input
-              onChange={handleInputChange}
-              placeholder="Enter username..."
-              onKeyDownAction={handleNewConnection}
+        <Tabs defaultValue="create" className="w-[400px] dark">
+          <TabsList>
+            <TabsTrigger value="create">Create</TabsTrigger>
+            <TabsTrigger value="join">Join</TabsTrigger>
+          </TabsList>
+          <TabsContent value="create">
+            <CreateRoomDialog
+              username={username}
+              handleInputChange={handleInputChange}
+              handleNewConnection={handleNewConnection}
             />
-            <Button onClick={handleNewConnection} text="Create Room" />
-          </div>
-
-          <Divider sx={{ color: "lightgray" }}>Or</Divider>
-
-          <h2 className="text-4xl">Join a Room ✅</h2>
-          <div className="flex flex-col space-y-5">
-            <h1 className="font-bold">{username}</h1>
-            <Input
-              onChange={handleInputChangeRoomId}
-              placeholder="Enter room ID..."
-              onKeyDownAction={handleJoin}
+          </TabsContent>
+          <TabsContent value="join">
+            <JoinRoomDialog
+              handleInputChange={handleInputChange}
+              handleJoin={handleJoin}
+              handleInputChangeRoomId={handleInputChangeRoomId}
             />
-            <Button onClick={handleJoin} text="Join" />
-          </div>
-        </>
+          </TabsContent>
+        </Tabs>
       ) : (
         <Chat username={username} roomId={roomId} />
       )}
