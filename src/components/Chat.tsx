@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import Button from "./Button";
-import { User } from "lucide-react";
+// import { User } from "lucide-react";
 import BASE_URL from "../utils/config";
 
 interface ChatProps {
   username: string | undefined;
+  roomId: string | undefined;
 }
 
-const Chat = ({ username }: ChatProps) => {
+const Chat = ({ username, roomId }: ChatProps) => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState<string>("");
-  const [userCount, setUserCount] = useState(0);
-
-  console.log("BASE URL:", BASE_URL); // TODO: Remove
+  // const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
     if (!username) return;
@@ -24,13 +23,13 @@ const Chat = ({ username }: ChatProps) => {
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
-        newClient.subscribe("/topic/userCount", (message) => {
-          console.log("Received user count update:", message.body);
-          setUserCount(parseInt(message.body, 10));
-        });
+        // newClient.subscribe("/topic/userCount", (message) => {
+        //   console.log("Received user count update:", message.body);
+        //   setUserCount(parseInt(message.body, 10));
+        // });
 
         // Subscribe to a topic
-        newClient.subscribe("/topic/public", (message) => {
+        newClient.subscribe(`/topic/${roomId}`, (message) => {
           const receivedMessage = message.body;
           setMessages((prevMessages) => [...prevMessages, receivedMessage]);
         });
@@ -41,7 +40,7 @@ const Chat = ({ username }: ChatProps) => {
           type: "JOIN",
         });
         newClient.publish({
-          destination: "/app/chat.addUser",
+          destination: `/app/chat.addUser/${roomId}`,
           body: joinMessage,
         });
       },
@@ -57,7 +56,7 @@ const Chat = ({ username }: ChatProps) => {
     return () => {
       if (newClient) newClient.deactivate();
     };
-  }, [username]);
+  }, [username, roomId]);
 
   const sendMessage = () => {
     if (messageInput.trim() && client) {
@@ -68,7 +67,7 @@ const Chat = ({ username }: ChatProps) => {
       });
 
       client.publish({
-        destination: "/app/chat.sendMessage",
+        destination: `/app/chat.sendMessage/${roomId}`,
         body: chatMessage,
       });
 
@@ -111,16 +110,16 @@ const Chat = ({ username }: ChatProps) => {
     if (client) {
       console.log("Disconnected from WebSocket server");
       window.location.reload();
-      // const leaveMessage = JSON.stringify({
-      //   sender: username,
-      //   content: "has left",
-      //   type: "LEAVE",
-      // });
+      const chatMessage = JSON.stringify({
+        sender: username,
+        content: messageInput,
+        type: "LEAVE",
+      });
 
-      // client.publish({
-      //   destination: "/app/chat.sendMessage",
-      //   body: leaveMessage,
-      // });
+      client.publish({
+        destination: `/app/chat.sendMessage/${roomId}`,
+        body: chatMessage,
+      });
       client.deactivate();
     }
   };
@@ -131,7 +130,7 @@ const Chat = ({ username }: ChatProps) => {
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
             <span className="font-bold text-cyan-500">{parseSender(msg)}</span>{" "}
-            {parseMessage(msg)}
+            <span className="text-white">{parseMessage(msg)}</span>
           </div>
         ))}
       </div>
@@ -146,16 +145,19 @@ const Chat = ({ username }: ChatProps) => {
               sendMessage();
             }
           }}
-          className="p-3 flex-grow rounded-xl border"
+          className="p-3 flex-grow rounded-xl border text-white"
         />
         <Button onClick={sendMessage} text="Send" />
       </div>
       <Button onClick={disconnect} text="Disconnect" isDisconnect={true} />
 
-      <div className="flex space-x-2">
+      {/* <div className="flex space-x-2">
         <User />
         <span>{userCount}</span>
-      </div>
+      </div> */}
+      <h1 className="text-gray-400">
+        <span className="font-bold">Room ID:</span> {roomId}
+      </h1>
     </div>
   );
 };
