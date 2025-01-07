@@ -20,6 +20,10 @@ const Chat = ({ username, roomId }: ChatProps) => {
 
     const newClient = new Client({
       brokerURL: `${BASE_URL}/ws`,
+      connectHeaders: {
+        username: username,
+        roomId: roomId!,
+      },
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
@@ -130,8 +134,20 @@ const Chat = ({ username, roomId }: ChatProps) => {
     }
   };
 
+  const handleCopy = () => {
+    navigator.clipboard
+      .writeText(roomId!)
+      .then(() => {
+        alert("Room ID copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+      });
+  };
+
   return (
     <div className="space-y-5 p-5">
+      <h2 className="text-3xl text-gray-300">Hi, {username} 👋</h2>
       <div className="overflow-y-auto border rounded-xl p-10 bg-[#141414] h-72">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
@@ -161,8 +177,8 @@ const Chat = ({ username, roomId }: ChatProps) => {
         <User className="text-gray-400" />
         <span className="text-gray-400">{userCount}</span>
       </div>
-      <h1 className="text-gray-400">
-        <span className="font-bold">Room ID:</span> {roomId}
+      <h1 className="text-gray-400 cursor-pointer" onClick={handleCopy}>
+        <span className="font-bold col-2">Room ID:</span> {roomId}
       </h1>
     </div>
   );
