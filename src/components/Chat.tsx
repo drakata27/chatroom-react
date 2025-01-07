@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import Button from "./Button";
-// import { User } from "lucide-react";
+import { User } from "lucide-react";
 import BASE_URL from "../utils/config";
 
 interface ChatProps {
@@ -13,20 +13,24 @@ const Chat = ({ username, roomId }: ChatProps) => {
   const [client, setClient] = useState<Client | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState<string>("");
-  // const [userCount, setUserCount] = useState(0);
+  const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
     if (!username) return;
 
     const newClient = new Client({
       brokerURL: `${BASE_URL}/ws`,
+      connectHeaders: {
+        username: username,
+        roomId: roomId!,
+      },
       onConnect: () => {
         console.log("Connected to WebSocket server");
 
-        // newClient.subscribe("/topic/userCount", (message) => {
-        //   console.log("Received user count update:", message.body);
-        //   setUserCount(parseInt(message.body, 10));
-        // });
+        newClient.subscribe(`/topic/${roomId}/userCount`, (message) => {
+          console.log("Received user count update:", message.body);
+          setUserCount(parseInt(message.body, 10));
+        });
 
         // Subscribe to a topic
         newClient.subscribe(`/topic/${roomId}`, (message) => {
@@ -107,25 +111,43 @@ const Chat = ({ username, roomId }: ChatProps) => {
   };
 
   const disconnect = () => {
-    if (client) {
-      console.log("Disconnected from WebSocket server");
-      window.location.reload();
-      const chatMessage = JSON.stringify({
-        sender: username,
-        content: messageInput,
-        type: "LEAVE",
-      });
+    const confirmedDisconnection = window.confirm(
+      "Are you sure you want to disconnect from the chat?"
+    );
 
-      client.publish({
-        destination: `/app/chat.sendMessage/${roomId}`,
-        body: chatMessage,
-      });
-      client.deactivate();
+    if (confirmedDisconnection) {
+      if (client) {
+        console.log("Disconnected from WebSocket server");
+        window.location.reload();
+        const chatMessage = JSON.stringify({
+          sender: username,
+          content: messageInput,
+          type: "LEAVE",
+        });
+
+        client.publish({
+          destination: `/app/chat.sendMessage/${roomId}`,
+          body: chatMessage,
+        });
+        client.deactivate();
+      }
     }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard
+      .writeText(roomId!)
+      .then(() => {
+        alert("Room ID copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+      });
   };
 
   return (
     <div className="space-y-5 p-5">
+      <h2 className="text-3xl text-gray-300">Hi, {username} 👋</h2>
       <div className="overflow-y-auto border rounded-xl p-10 bg-[#141414] h-72">
         {messages.map((msg, index) => (
           <div key={index} className="mb-2">
@@ -151,12 +173,12 @@ const Chat = ({ username, roomId }: ChatProps) => {
       </div>
       <Button onClick={disconnect} text="Disconnect" isDisconnect={true} />
 
-      {/* <div className="flex space-x-2">
-        <User />
-        <span>{userCount}</span>
-      </div> */}
-      <h1 className="text-gray-400">
-        <span className="font-bold">Room ID:</span> {roomId}
+      <div className="flex space-x-2">
+        <User className="text-gray-400" />
+        <span className="text-gray-400">{userCount}</span>
+      </div>
+      <h1 className="text-gray-400 cursor-pointer" onClick={handleCopy}>
+        <span className="font-bold col-2">Room ID:</span> {roomId}
       </h1>
     </div>
   );
