@@ -3,6 +3,7 @@ import { Client } from "@stomp/stompjs";
 import Button from "./Button";
 import { User } from "lucide-react";
 import BASE_URL from "../utils/config";
+import Swal from "sweetalert2";
 
 interface ChatProps {
   username: string | undefined;
@@ -111,34 +112,37 @@ const Chat = ({ username, roomId }: ChatProps) => {
   };
 
   const disconnect = () => {
-    const confirmedDisconnection = window.confirm(
-      "Are you sure you want to disconnect from the chat?"
-    );
-
-    if (confirmedDisconnection) {
-      if (client) {
-        console.log("Disconnected from WebSocket server");
-        window.location.reload();
-        const chatMessage = JSON.stringify({
-          sender: username,
-          content: messageInput,
-          type: "LEAVE",
-        });
-
-        client.publish({
-          destination: `/app/chat.sendMessage/${roomId}`,
-          body: chatMessage,
-        });
-        client.deactivate();
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to disconnect from the chat?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, disconnect",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (client) {
+          console.log("Disconnected from WebSocket server");
+          window.location.reload();
+          client.deactivate();
+        }
       }
-    }
+    });
   };
 
   const handleCopy = () => {
     navigator.clipboard
       .writeText(roomId!)
       .then(() => {
-        alert("Room ID copied to clipboard!");
+        Swal.fire({
+          title: "Room ID copied to clipboard",
+          icon: "success",
+          toast: true,
+          timer: 2000,
+          position: "bottom-right",
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
